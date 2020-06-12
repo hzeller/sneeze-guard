@@ -5,7 +5,7 @@ glass_thick=3.1;   // Acrulic thickness
 
 // How wide the mount at the corner should be
 corner_mount_w = 1.5 * 25.4;
-corner_mount_thick = 4;
+corner_mount_thick = 3;
 
 // since the corner mount puts the glass a bit inward, that is also the width
 // of the foot of the t-thing in the middle.
@@ -17,8 +17,9 @@ holding_w=12;       // Width of the fingers holding
 holding_l=40;       // lenght of the fingers.
 smooth_fn=6;        // finger front-parts: not fully round circles.
 
-glass_up=4;         // How much the acrylic is hovering over the table.
+glass_up=3;         // How much the acrylic is hovering over the table.
 
+use_table_screws=false;
 screw_len=40;       // General screw punching action.
 screw_dia=4;
 
@@ -55,37 +56,42 @@ module t_punch(up=glass_up) {
 	  // Screw in the length
 	  translate([holding_l/2, screw_len/2, holding_high/2]) rotate([90, 0, 0]) cylinder(r=screw_dia/2, h=screw_len);
 
-	  // To table screw. Outside.
-	  translate([-(foot_diameter-holding_w)/4-holding_w/4, -(holding_l/2+5), -screw_len/2]) cylinder(r=screw_dia/2, h=screw_len);
-	  translate([-(foot_diameter-holding_w)/4-holding_w/4, +(holding_l/2+5), -screw_len/2]) cylinder(r=screw_dia/2, h=screw_len);
-	  //translate([-(foot_diameter-holding_w)/4-holding_w/4, 0, -screw_len/2]) cylinder(r=screw_dia/2, h=screw_len);
+	  if (use_table_screws) {
+	       // To table screw. Outside.
+	       translate([-(foot_diameter-holding_w)/4-holding_w/4, -(holding_l/2+5), -screw_len/2]) cylinder(r=screw_dia/2, h=screw_len);
+	       translate([-(foot_diameter-holding_w)/4-holding_w/4, +(holding_l/2+5), -screw_len/2]) cylinder(r=screw_dia/2, h=screw_len);
+	       //translate([-(foot_diameter-holding_w)/4-holding_w/4, 0, -screw_len/2]) cylinder(r=screw_dia/2, h=screw_len);
 
-	  // Inside
-	  translate([foot_diameter/2-5, +(holding_l/2-5), -screw_len/2]) cylinder(r=screw_dia/2, h=screw_len);
-	  translate([foot_diameter/2-5, -(holding_l/2-5), -screw_len/2]) cylinder(r=screw_dia/2, h=screw_len);
+	       // Inside
+	       translate([foot_diameter/2-5, +(holding_l/2-5), -screw_len/2]) cylinder(r=screw_dia/2, h=screw_len);
+	       translate([foot_diameter/2-5, -(holding_l/2-5), -screw_len/2]) cylinder(r=screw_dia/2, h=screw_len);
+	  }
 
      }
 }
 
-module corner_block(up=0) {
+module corner_block(up=4, screw_to_edge=use_table_screws) {
      // holding finger
      hull() {
-	  translate([0, holding_l, 0]) cylinder(r=holding_w/2, h=holding_high+up, $fn=smooth_fn);
+	  translate([0, holding_l-holding_w/2, 0]) cylinder(r=holding_w/2, h=holding_high+up, $fn=smooth_fn);
 	  translate([-holding_w/2, 0, 0]) cube([holding_w, e, holding_high+up]);
      }
 
      // Table support
      hull() {
 	  translate([-corner_mount_w/2, 0, 0]) cube([corner_mount_w, e, up]);
-	  translate([-holding_w/2, holding_l, 0]) cube([holding_w, e, up]);
+	  translate([0, holding_l-corner_mount_w/2, 0]) cylinder(r=corner_mount_w/2, h=up);
      }
 
      // Side-wall table connect
      translate([0, -corner_mount_thick, 0]) hull() {
+	  translate([-corner_mount_w/2, 0, 0]) cube([corner_mount_w, corner_mount_thick, e]);
 	  translate([-corner_mount_w/2, 0, up]) cube([corner_mount_w, corner_mount_thick, e]);
-	  //translate([-corner_mount_w/2, 0, -table_high]) cube([corner_mount_w, corner_mount_thick, e]);
-	  translate([-(corner_mount_w/2-10), 0, -(table_high-10)]) rotate([-90, 0, 0]) cylinder(r=10, h=corner_mount_thick);
-	  translate([+(corner_mount_w/2-10), 0, -(table_high-10)]) rotate([-90, 0, 0]) cylinder(r=10, h=corner_mount_thick);
+
+	  if (screw_to_edge) {
+	       translate([-(corner_mount_w/2-10), 0, -(table_high-10)]) rotate([-90, 0, 0]) cylinder(r=10, h=corner_mount_thick);
+	       translate([+(corner_mount_w/2-10), 0, -(table_high-10)]) rotate([-90, 0, 0]) cylinder(r=10, h=corner_mount_thick);
+	  }
 
 	  translate([-holding_w/2, 0, holding_high+up]) cube([holding_w, corner_mount_thick, e]);
      }
@@ -132,7 +138,11 @@ module print_top_t() { t_part(up=glass_up, needs_foot=false); }
 module print_bottom_t() { t_part(up=glass_up, needs_foot=true); }
 
 module print_corner_mount(up=glass_up) {
-     translate([0, 0, corner_mount_thick]) rotate([90, 0, 0]) corner_mount();
+     if (use_table_screws) {
+	  translate([0, 0, corner_mount_thick]) rotate([90, 0, 0]) corner_mount();
+     } else {
+	  corner_mount();
+     }
 }
 
 module assembly() {
@@ -143,7 +153,8 @@ module assembly() {
 
      t_glass();
 
-     color("beige", 0.3) translate([-corner_mount_w/2, -150, -38]) cube([300, 300, 38]);
+     color("beige", 0.3) translate([-corner_mount_w/2, -153, -38]) cube([300, 306, 38]);
 }
 
 assembly();
+//print_corner_mount();
