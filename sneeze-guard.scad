@@ -147,6 +147,7 @@ module corner_mount(up=glass_up, is_right=true) {
 // Functions used in the Makefile
 module print_top_t() { t_part(up=glass_up, needs_foot=false); }
 module print_bottom_t() { t_part(up=glass_up, needs_foot=true); }
+module print_center_t() { t_part(up=0, needs_foot=false); }
 
 module corner_mount_preprint(up=glass_up, is_right=true) {
      if (use_table_screws) {
@@ -170,9 +171,9 @@ module assembly() {
      translate([0, -150, 0]) corner_mount(is_right=false);
      translate([0, 150, 0]) rotate([0, 0, 180]) corner_mount(is_right=true);
 
-     t_glass();
+     t_glass();   // Visualization glass
 
-     color("beige", 0.3) translate([edge_flush ? -holding_w/2 : -corner_mount_w/2, -153, -38]) cube([300, 306, 38]);
+     color("beige", 0.3) translate([edge_flush ? -holding_w/2 : -corner_mount_w/2, -153, -38]) cube([300, 306, 38]);  // Visualization table
 }
 
 assembly();
