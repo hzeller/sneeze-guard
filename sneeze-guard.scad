@@ -41,7 +41,7 @@ module t_glass(up=glass_up) {
 	  translate([0, -150, 0])
 	       cube([glass_thick, 300, 150]);
 	  translate([0, -glass_thick/2, 0])
-	       cube([200, glass_thick, 150]);
+	       cube([250, glass_thick, 150]);
      }
 }
 
@@ -98,9 +98,9 @@ module corner_block(up=4, screw_to_edge=use_table_screws) {
      }
 }
 
-module t_block(up=0, needs_foot=false) {
+module support_block(up=0, needs_foot=false, center_finger=false) {
      // center finger
-     translate([-holding_w/2, 0, 0]) hull() {
+     if (center_finger) translate([-holding_w/2, 0, 0]) hull() {
 	  translate([0, -holding_w/2, 0]) cube([e, holding_w, holding_high+up]);
 	  translate([holding_l, 0, 0]) cylinder(r=holding_w/2, h=holding_high+up, $fn=smooth_fn);
      }
@@ -115,8 +115,12 @@ module t_block(up=0, needs_foot=false) {
      if (needs_foot) hull() {
 	  translate([0, +(holding_l-foot_diameter/2), 0]) cylinder(r=foot_diameter/2, h=up);
 	  translate([0, -(holding_l-foot_diameter/2), 0]) cylinder(r=foot_diameter/2, h=up);
-	  translate([(holding_l-foot_diameter/2), 0, 0]) cylinder(r=foot_diameter/2, h=up);
+	  if (center_finger) translate([(holding_l-foot_diameter/2), 0, 0]) cylinder(r=foot_diameter/2, h=up);
      }
+}
+
+module t_block(up=0, needs_foot=false) {
+     support_block(up=up, needs_foot=needs_foot, center_finger=true);
 }
 
 // Assembled t part: block minus punch.
@@ -129,6 +133,13 @@ module t_part(up=0, needs_foot=false) {
 	       t_block(up=up, needs_foot=needs_foot);
 	       t_punch(up=up);
 	  }
+     }
+}
+
+module slot_part(up=0, needs_foot=true) {
+     difference() {
+	  support_block(up=up, needs_foot=needs_foot, center_finger=false);
+	  translate([-glass_thick/2, -100, up]) cube([glass_thick, 200, 200]);
      }
 }
 
@@ -148,6 +159,7 @@ module corner_mount(up=glass_up, is_right=true) {
 module print_top_t() { t_part(up=glass_up, needs_foot=false); }
 module print_bottom_t() { t_part(up=glass_up, needs_foot=true); }
 module print_center_t() { t_part(up=0, needs_foot=false); }
+module print_long_support() { slot_part(up=glass_up); }
 
 module corner_mount_preprint(up=glass_up, is_right=true) {
      if (use_table_screws) {
@@ -173,11 +185,16 @@ module assembly() {
 
      translate([0, 0, 80+2*glass_up]) rotate([180, 0, 0]) t_part(up=-e, needs_foot=false);
 
+     translate([150, 0, 0]) rotate([0, 0, 90]) slot_part(up=glass_up);
+
      t_glass();   // Visualization glass
 
      color("beige", 0.3) translate([edge_flush ? -holding_w/2 : -corner_mount_w/2, -153, -38]) cube([300, 306, 38]);  // Visualization table
 }
 
 assembly();
+//t_part();
+//t_block();
+//slot_part(up=2);
 //corner_mount();
 //print_corner_mount();
