@@ -171,6 +171,8 @@ module assembly() {
      translate([0, -150, 0]) corner_mount(is_right=false);
      translate([0, 150, 0]) rotate([0, 0, 180]) corner_mount(is_right=true);
 
+     translate([0, 0, 80+2*glass_up]) rotate([180, 0, 0]) t_part(up=-e, needs_foot=false);
+
      t_glass();   // Visualization glass
 
      color("beige", 0.3) translate([edge_flush ? -holding_w/2 : -corner_mount_w/2, -153, -38]) cube([300, 306, 38]);  // Visualization table
