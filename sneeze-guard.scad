@@ -36,9 +36,9 @@ module corner_punch(up=glass_up) {
 }
 
 // Plexiglass for t-part
-module t_glass(up=glass_up) {
+module t_glass(up=glass_up, edge=false) {
      color("azure", 0.25) translate([-glass_thick/2, 0, up]) {
-	  translate([0, -150, 0])
+	  translate([0, edge ? 0 : -150, 0])
 	       cube([glass_thick, 300, 150]);
 	  translate([0, -glass_thick/2, 0])
 	       cube([250, glass_thick, 150]);
@@ -46,8 +46,8 @@ module t_glass(up=glass_up) {
 }
 
 // Punches for T-part
-module t_punch(up=glass_up) {
-     t_glass(up);
+module t_punch(up=glass_up, edge=false) {
+     t_glass(up, edge);
 
      color("silver") translate([-glass_thick/2, 0, up]) {
 	  // Screws right left
@@ -136,6 +136,18 @@ module t_part(up=0, needs_foot=false) {
      }
 }
 
+module L_part(up=0, needs_foot=false) {
+     intersection() {
+	  if (edge_flush) {
+	       translate([100-holding_w/2, 100-holding_w/2, 0]) cube([200, 200, 200], center=true);
+	  }
+	  difference() {
+	       t_block(up=up, needs_foot=needs_foot);
+	       t_punch(up=up, edge=true);
+	  }
+     }
+}
+
 module slot_part(up=0, needs_foot=true) {
      difference() {
 	  support_block(up=up, needs_foot=needs_foot, center_finger=false);
@@ -160,6 +172,8 @@ module print_top_t() { t_part(up=glass_up, needs_foot=false); }
 module print_bottom_t() { t_part(up=glass_up, needs_foot=true); }
 module print_center_t() { t_part(up=0, needs_foot=false); }
 module print_long_support() { slot_part(up=glass_up); }
+module print_bottom_l() { L_part(up=glass_up, needs_foot=true); }
+module print_top_l() { L_part(up=glass_up, needs_foot=false); }
 
 module corner_mount_preprint(up=glass_up, is_right=true) {
      if (use_table_screws) {
@@ -193,8 +207,3 @@ module assembly() {
 }
 
 assembly();
-//t_part();
-//t_block();
-//slot_part(up=2);
-//corner_mount();
-//print_corner_mount();
